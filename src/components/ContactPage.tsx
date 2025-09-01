@@ -1,19 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Mail, Phone, MapPin, Send, User, Building, MessageSquare, ArrowLeft } from 'lucide-react';
+import emailjs from '@emailjs/browser';
 
 const ContactPage: React.FC = () => {
+  const form = useRef<HTMLFormElement>(null);
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    company: '',
-    jobTitle: '',
-    inquiryType: '',
+    user_name: '',
+    user_lastName: '',
+    user_email: '',
+    user_phone: '',
+    user_company: '',
+    user_jobTitle: '',
+    user_inquiryType: '',
     message: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const resetData = () => {
+    setFormData({
+      user_name: '',
+      user_lastName: '',
+      user_email: '',
+      user_phone: '',
+      user_company: '',
+      user_jobTitle: '',
+      user_inquiryType: '',
+      message: ''
+    });
+  };
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -25,21 +40,34 @@ const ContactPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
-    // Simulate form submission
-    setTimeout(() => {
+    if (!form.current) {
       setIsSubmitting(false);
-      setIsSubmitted(true);
-      console.log('Contact form submitted:', formData);
-    }, 2000);
+      alert('No se pudo enviar el formulario. Intenta nuevamente.');
+      return;
+    }
+    emailjs
+      .sendForm('service_au6a7nk', 'template_cet9agl', form.current, {
+        publicKey: '223Awe3GwQwQX53NN',
+      })
+      .then(
+        () => {
+          setIsSubmitting(false);
+          setIsSubmitted(true);
+          resetData();
+        },
+        (error) => {
+          setIsSubmitting(false);
+          alert('Error al enviar el mensaje. Intenta nuevamente: ' + error.text);
+        },
+      );
   };
 
   const isFormValid = () => {
-    return formData.firstName && 
-           formData.lastName && 
-           formData.email && 
-           formData.company && 
-           formData.inquiryType && 
+    return formData.user_name && 
+           formData.user_lastName && 
+           formData.user_email && 
+           formData.user_company && 
+           formData.user_inquiryType && 
            formData.message;
   };
 
@@ -58,7 +86,7 @@ const ContactPage: React.FC = () => {
               Your message has been sent successfully. Our team will get back to you within 24 hours.
             </p>
             <button
-              onClick={() => window.location.href = '/'}
+              onClick={() => setIsSubmitted(false)}
               className="bg-gradient-to-r from-primary-teal via-primary-coral to-primary-orange text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 hover:shadow-xl hover:scale-105"
             >
               Close
@@ -156,7 +184,7 @@ const ContactPage: React.FC = () => {
                 <p className="text-white/90">Fill out the form below and we'll get back to you soon.</p>
               </div>
 
-              <form onSubmit={handleSubmit} className="p-8">
+              <form ref={form} onSubmit={handleSubmit} className="p-8">
                 <div className="grid md:grid-cols-2 gap-6 mb-6">
                   {/* First Name */}
                   <div>
@@ -169,8 +197,9 @@ const ContactPage: React.FC = () => {
                       </div>
                       <input
                         type="text"
-                        value={formData.firstName}
-                        onChange={(e) => handleInputChange('firstName', e.target.value)}
+                        name="user_name"
+                        value={formData.user_name}
+                        onChange={(e) => handleInputChange('user_name', e.target.value)}
                         className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-teal focus:border-transparent transition-all duration-200"
                         placeholder="Enter your first name"
                         required
@@ -189,8 +218,9 @@ const ContactPage: React.FC = () => {
                       </div>
                       <input
                         type="text"
-                        value={formData.lastName}
-                        onChange={(e) => handleInputChange('lastName', e.target.value)}
+                        name="user_lastName"
+                        value={formData.user_lastName}
+                        onChange={(e) => handleInputChange('user_lastName', e.target.value)}
                         className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-teal focus:border-transparent transition-all duration-200"
                         placeholder="Enter your last name"
                         required
@@ -211,13 +241,14 @@ const ContactPage: React.FC = () => {
                       </div>
                       <input
                         type="email"
-                        value={formData.email}
-                        onChange={(e) => handleInputChange('email', e.target.value)}
+                        name="user_email"
+                        value={formData.user_email}
+                        onChange={(e) => handleInputChange('user_email', e.target.value)}
                         className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-teal focus:border-transparent transition-all duration-200"
                         placeholder="Enter your email"
                         required
                       />
-                    </div>
+                    </div>  
                   </div>
 
                   {/* Phone */}
@@ -231,8 +262,9 @@ const ContactPage: React.FC = () => {
                       </div>
                       <input
                         type="tel"
-                        value={formData.phone}
-                        onChange={(e) => handleInputChange('phone', e.target.value)}
+                        name="user_phone"
+                        value={formData.user_phone}
+                        onChange={(e) => handleInputChange('user_phone', e.target.value)}
                         className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-teal focus:border-transparent transition-all duration-200"
                         placeholder="Enter your phone number"
                       />
@@ -252,8 +284,9 @@ const ContactPage: React.FC = () => {
                       </div>
                       <input
                         type="text"
-                        value={formData.company}
-                        onChange={(e) => handleInputChange('company', e.target.value)}
+                        name="user_company"
+                        value={formData.user_company}
+                        onChange={(e) => handleInputChange('user_company', e.target.value)}
                         className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-teal focus:border-transparent transition-all duration-200"
                         placeholder="Enter your company name"
                         required
@@ -268,8 +301,9 @@ const ContactPage: React.FC = () => {
                     </label>
                     <input
                       type="text"
-                      value={formData.jobTitle}
-                      onChange={(e) => handleInputChange('jobTitle', e.target.value)}
+                      name="user_jobTitle"
+                      value={formData.user_jobTitle}
+                      onChange={(e) => handleInputChange('user_jobTitle', e.target.value)}
                       className="w-full px-4 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-teal focus:border-transparent transition-all duration-200"
                       placeholder="Enter your job title"
                     />
@@ -282,8 +316,9 @@ const ContactPage: React.FC = () => {
                     Inquiry Type *
                   </label>
                   <select
-                    value={formData.inquiryType}
-                    onChange={(e) => handleInputChange('inquiryType', e.target.value)}
+                    name="user_inquiryType"
+                    value={formData.user_inquiryType}
+                    onChange={(e) => handleInputChange('user_inquiryType', e.target.value)}
                     className="w-full px-4 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-teal focus:border-transparent transition-all duration-200"
                     required
                   >
@@ -307,6 +342,7 @@ const ContactPage: React.FC = () => {
                       <MessageSquare className="h-5 w-5 text-gray-400" />
                     </div>
                     <textarea
+                      name="message"
                       value={formData.message}
                       onChange={(e) => handleInputChange('message', e.target.value)}
                       rows={6}
